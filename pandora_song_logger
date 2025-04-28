@@ -1,0 +1,93 @@
+// ==UserScript==
+// @name         Pandora Song Logger with CSV Download Button (Updated)
+// @namespace    http://tampermonkey.net/
+// @version      1.4
+// @description  Logs songs as they play on Pandora and lets you download the list as CSV
+// @author       You
+// @match        https://www.pandora.com/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    let lastSong = '';
+
+    function logCurrentSong() {
+        // Updated selectors based on the element you found
+        let artistNameElement = document.querySelector('.NowPlayingTopInfo__current__artistName');
+        let albumNameElement = document.querySelector('.nowPlayingTopInfo__current__albumName');
+
+        if (artistNameElement && albumNameElement) {
+            let artist = artistNameElement.textContent.trim();
+            let album = albumNameElement.textContent.trim();
+            let fullInfo = `${artist} - ${album}`;
+
+            if (fullInfo !== lastSong) {
+                lastSong = fullInfo;
+                console.log(`[Pandora Logger] ${fullInfo}`);
+
+                // Save to localStorage
+                let songList = JSON.parse(localStorage.getItem('pandoraSongList') || '[]');
+                songList.push({ artist, album });
+                localStorage.setItem('pandoraSongList', JSON.stringify(songList));
+            }
+        }
+    }
+
+    function createDownloadButton() {
+        let existingButton = document.getElementById('downloadSongListButton');
+        if (existingButton) return; // Avoid creating it multiple times
+
+        let button = document.createElement('button');
+        button.innerText = 'Download Songs (CSV)';
+        button.id = 'downloadSongListButton';
+        button.style.position = 'fixed';
+        button.style.bottom = '20px';
+        button.style.right = '20px';
+        button.style.zIndex = '9999';
+        button.style.padding = '10px 15px';
+        button.style.backgroundColor = '#1db954';
+        button.style.color = 'white';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.cursor = 'pointer';
+        button.style.fontSize = '14px';
+        button.style.boxShadow = '0 4px 6px rgba(0,0,0,0.3)';
+
+        button.onclick = () => {
+            let songList = JSON.parse(localStorage.getItem('pandoraSongList') || '[]');
+            if (songList.length === 0) {
+                alert('No songs logged yet!');
+                return;
+            }
+
+            // Create CSV content
+            let csvContent = "Artist,Album\n";
+            songList.forEach(song => {
+                csvContent += `"${song.artist}","${song.album}"\n`;
+            });
+
+            // Create a Blob with CSV data
+            let blob = new Blob([csvContent], { type: 'text/csv' });
+            let url = URL.createObjectURL(blob);
+
+            // Create an anchor tag to download the file
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'pandora_song_list.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        document.body.appendChild(button);
+    }
+
+    // Run the song logger every 5 seconds
+    setInterval(logCurrentSong, 5000);
+
+    // Create the download button once the page loads
+    window.addEventListener('load', createDownloadButton);
+})();
