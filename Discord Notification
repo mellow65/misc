@@ -1,0 +1,10 @@
+#!/bin/bash
+
+WEBHOOK_URL="https://discord.com/api/webhooks/XXXXXXXX/XXXXXXXX"
+HOSTNAME=$(hostname)
+TIME=$(date '+%Y-%m-%d %H:%M:%S')
+
+curl -H "Content-Type: application/json" \
+     -X POST \
+     -d "{\"content\": \"🔁 VPS **$HOSTNAME** rebooted after updates at $TIME.\"}" \
+     "$WEBHOOK_URL"
