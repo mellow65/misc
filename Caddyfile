@@ -1,19 +1,10 @@
-# The Caddyfile is an easy way to configure your Caddy web server.
-#
-# Unless the file starts with a global options block, the first
-# uncommented line is always the address of your site.
-#
-# To use your own domain name (with automatic HTTPS), first make
-# sure your domain's A/AAAA DNS records are properly pointed to
-# this machine's public IP, then replace ":80" below with your
-# domain name.
+# Global options block
 {
-        servers https {
-                protocols h3
-        }
+    servers https {
+        protocols h3  # Enable HTTP/3
+    }
 }
 
-# Wildcard DNS cert via Cloudflare
 (cloudflare) {
         tls {
                 dns cloudflare MY_CLOUDFLARE_API
@@ -21,67 +12,66 @@
         }
 }
 
-# Self-signed backend template
+
+# Template for proxying to backends with self-signed certs
 (selfsigned_proxy) {
-        import cloudflare
-        reverse_proxy https://{args[0]} {
-                transport http {
-                        tls_insecure_skip_verify
-                }
+    reverse_proxy https://{args[0]} {
+        transport http {
+            tls_insecure_skip_verify
         }
+    }
+    import cloudflare
 }
 
-prox1.mysite.com {
-        import selfsigned_proxy 10.0.2.20:8006
+# Template for plain HTTP backends
+(plain_proxy) {
+    reverse_proxy {args[0]}
+    import cloudflare
 }
 
-prox2.mysite.com {
-        import selfsigned_proxy 10.0.2.21:8006
+# --- Services using self-signed HTTPS on backend ---
+prox1.mysite.local {
+    import selfsigned_proxy 10.0.2.20:8006
 }
 
-unifi.mysite.com {
-        import selfsigned_proxy 10.0.2.25:8443
+prox2.mysite.local {
+    import selfsigned_proxy 10.0.2.21:8006
 }
 
-audioshelf.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.2.29:13378
+unifi.mysite.local {
+    import selfsigned_proxy 10.0.2.25:8443
 }
 
-file.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.150.115:8080
+# --- Services using HTTP on backend ---
+audioshelf.mysite.local {
+    import plain_proxy 10.0.2.29:13378
 }
 
-home.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.69.69:8123
+file.mysite.local {
+    import plain_proxy 10.0.150.115:8080
 }
 
-homer.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.2.72:8010
+home.mysite.local {
+    import plain_proxy 10.0.69.69:8123
 }
 
-immich.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.150.110:2283
+homer.mysite.local {
+    import plain_proxy 10.0.2.72:8010
 }
 
-jellyfin.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.2.30:8096
+immich.mysite.local {
+    import plain_proxy 10.0.150.110:2283
 }
 
-music.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.2.29:4533
+jellyfin.mysite.local {
+    import plain_proxy 10.0.2.30:8096
 }
 
-vw.mysite.com {
-        import cloudflare
-        reverse_proxy 10.0.2.28:80
+music.mysite.local {
+    import plain_proxy 10.0.2.29:4533
 }
 
-# Refer to the Caddy docs for more information:
-# https://caddyserver.com/docs/caddyfile
+vw.mysite.local {
+    import plain_proxy 10.0.2.28:80
+}
+
