@@ -1,0 +1,87 @@
+# The Caddyfile is an easy way to configure your Caddy web server.
+#
+# Unless the file starts with a global options block, the first
+# uncommented line is always the address of your site.
+#
+# To use your own domain name (with automatic HTTPS), first make
+# sure your domain's A/AAAA DNS records are properly pointed to
+# this machine's public IP, then replace ":80" below with your
+# domain name.
+{
+        servers https {
+                protocols h3
+        }
+}
+
+# Wildcard DNS cert via Cloudflare
+(cloudflare) {
+        tls {
+                dns cloudflare MY_CLOUDFLARE_API
+                propagation_delay 90s
+        }
+}
+
+# Self-signed backend template
+(selfsigned_proxy) {
+        import cloudflare
+        reverse_proxy https://{args[0]} {
+                transport http {
+                        tls_insecure_skip_verify
+                }
+        }
+}
+
+prox1.mysite.com {
+        import selfsigned_proxy 10.0.2.20:8006
+}
+
+prox2.mysite.com {
+        import selfsigned_proxy 10.0.2.21:8006
+}
+
+unifi.mysite.com {
+        import selfsigned_proxy 10.0.2.25:8443
+}
+
+audioshelf.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.2.29:13378
+}
+
+file.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.150.115:8080
+}
+
+home.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.69.69:8123
+}
+
+homer.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.2.72:8010
+}
+
+immich.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.150.110:2283
+}
+
+jellyfin.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.2.30:8096
+}
+
+music.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.2.29:4533
+}
+
+vw.mysite.com {
+        import cloudflare
+        reverse_proxy 10.0.2.28:80
+}
+
+# Refer to the Caddy docs for more information:
+# https://caddyserver.com/docs/caddyfile
