@@ -1,77 +1,32 @@
-# Global options block
-{
-    servers https {
-        protocols h3  # Enable HTTP/3
-    }
-}
-
 (cloudflare) {
         tls {
-                dns cloudflare MY_CLOUDFLARE_API
-                propagation_delay 90s
+                dns cloudflare YOUR_API_CODE_NO_QUOTES
+                propagation_delay 90s  #My whole system can take a long time, but I feel that's just me, you may be able to remove this. 
         }
 }
-
 
 # Template for proxying to backends with self-signed certs
 (selfsigned_proxy) {
-    reverse_proxy https://{args[0]} {
-        transport http {
-            tls_insecure_skip_verify
+        reverse_proxy https://{args[0]} {
+                transport http {
+                        tls_insecure_skip_verify
+                }
         }
-    }
-    import cloudflare
+        import cloudflare
 }
 
 # Template for plain HTTP backends
 (plain_proxy) {
-    reverse_proxy {args[0]}
-    import cloudflare
+        reverse_proxy {args[0]}
+        import cloudflare
 }
 
 # --- Services using self-signed HTTPS on backend ---
-prox1.mysite.local {
-    import selfsigned_proxy 10.0.2.20:8006
-}
-
-prox2.mysite.local {
-    import selfsigned_proxy 10.0.2.21:8006
-}
-
-unifi.mysite.local {
-    import selfsigned_proxy 10.0.2.25:8443
+https_service.yourhomelab.com {
+        import selfsigned_proxy 10.0.2.5:8080
 }
 
 # --- Services using HTTP on backend ---
-audioshelf.mysite.local {
-    import plain_proxy 10.0.2.29:13378
+http_service.yourhomelab.com {
+        import plain_proxy 10.0.2.10:9000
 }
-
-file.mysite.local {
-    import plain_proxy 10.0.150.115:8080
-}
-
-home.mysite.local {
-    import plain_proxy 10.0.69.69:8123
-}
-
-homer.mysite.local {
-    import plain_proxy 10.0.2.72:8010
-}
-
-immich.mysite.local {
-    import plain_proxy 10.0.150.110:2283
-}
-
-jellyfin.mysite.local {
-    import plain_proxy 10.0.2.30:8096
-}
-
-music.mysite.local {
-    import plain_proxy 10.0.2.29:4533
-}
-
-vw.mysite.local {
-    import plain_proxy 10.0.2.28:80
-}
-
