@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Your Favorite People ❤</title>
+  <style>
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2em;
+      background: linear-gradient(to bottom right, #fefcea, #f1da36); /* soft yellow gradient */
+      background-image: url('background.jpg'); /* optional if you add a custom image */
+      background-size: cover;
+      background-position: center;
+      color: #333;
+    }
+
+
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+      color: #d63384;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    img {
+      max-width: 90%;
+      height: auto;
+      margin: 20px auto;
+      display: block;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    #countdown {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #0066cc;
+      margin-top: 10px;
+    }
+
+
+	.gallery {
+	  margin-top: 40px;
+	  display: flex;
+	  flex-wrap: wrap;
+	  justify-content: center;
+	  gap: 10px;
+	}
+    .gallery img {
+      width: 150px;
+      height: auto;
+      border-radius: 12px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .gallery img:hover {
+      transform: scale(1.07);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+		
+  </style>
+</head>
+<body>
+  <h1>❤ Weekly Photos ❤</h1>
+  <p id="status">Loading image...</p>
+  <p id="countdown"></p>
+  <img id="weeklyImage" style="display: none;" />
+
+  <div class="gallery" id="pastImages"></div>
+
+  <script>
+    const firstReleaseDate = new Date("2025-05-03T16:00:00"); // adjust as needed
+    const now = new Date();
+    const msInWeek = 7 * 24 * 60 * 60 * 1000;
+    const totalImages = 26; // adjust to your number of images
+
+    const weeksPassed = Math.floor((now - firstReleaseDate) / msInWeek);
+    const nextRelease = new Date(firstReleaseDate.getTime() + (weeksPassed + 1) * msInWeek);
+
+    const weeklyImage = document.getElementById("weeklyImage");
+    const status = document.getElementById("status");
+    const countdown = document.getElementById("countdown");
+    const pastImages = document.getElementById("pastImages");
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = nextRelease - now;
+      if (diff > 0) {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+        countdown.textContent = `Next image in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+      } else {
+        countdown.textContent = "New image available!";
+      }
+    }
+
+    function showImages() {
+      if (weeksPassed >= 0 && weeksPassed < totalImages) {
+        const currentImage = `images/week${weeksPassed + 1}.jpg`;
+        weeklyImage.src = currentImage;
+        weeklyImage.style.display = "block";
+        status.textContent = `Week ${weeksPassed + 1}`;
+
+        // Show past images
+		for (let i = 1; i <= weeksPassed; i++) {
+		  const img = document.createElement("img");
+		  img.src = `images/week${i}.jpg`;
+		  img.alt = `Week ${i}`;
+
+		  const link = document.createElement("a");
+		  link.href = img.src;
+		  link.target = "_blank"; // opens in a new tab
+		  link.appendChild(img);
+
+		  pastImages.appendChild(link);
+		}
+
+      } else if (weeksPassed >= totalImages) {
+        status.textContent = "All weekly images have been revealed!";
+      } else {
+        status.textContent = "The first image will be revealed soon!";
+      }
+    }
+
+    // Update countdown every second
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    showImages();
+  </script>
+</body>
+</html>
